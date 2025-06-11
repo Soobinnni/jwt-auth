@@ -1,24 +1,27 @@
 package com.auth.jwt.user.domain.vo;
 
 public class UserId {
-  private final String value;
+  private final Long value;
 
-  private UserId(String value) {
+  private UserId(Long value) {
     this.value = value;
   }
 
-  public static UserId of(String value) {
+  public static UserId of(Long value) {
     validateUserId(value);
     return new UserId(value);
   }
 
-  private static void validateUserId(String value) {
-    if (value == null || value.isBlank()) {
+  private static void validateUserId(Long value) {
+    if (value == null) {
       throw new IllegalArgumentException("사용자 식별자가 비어있습니다. 사용자 식별자는 필수입니다.");
+    }
+    if (value <= 0) {
+      throw new IllegalArgumentException("사용자 식별자는 양수여야 합니다.");
     }
   }
 
-  public String getValue() {
+  public Long getValue() {
     return value;
   }
 
@@ -37,6 +40,6 @@ public class UserId {
 
   @Override
   public String toString() {
-    return value;
+    return String.valueOf(value);
   }
 }
