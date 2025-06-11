@@ -1,6 +1,6 @@
-package com.auth.jwt.domain.user.vo;
+package com.auth.jwt.user.domain.vo;
 
-import com.auth.jwt.domain.user.PasswordEncryptionProvider;
+import com.auth.jwt.user.domain.PasswordEncryptionProvider;
 
 public class Password {
   private static final int MIN_LENGTH = 8;

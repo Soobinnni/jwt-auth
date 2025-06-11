@@ -1,9 +1,9 @@
-package com.auth.jwt.domain.user;
+package com.auth.jwt.user.domain.entity;
 
-import com.auth.jwt.domain.user.vo.Nickname;
-import com.auth.jwt.domain.user.vo.Password;
-import com.auth.jwt.domain.user.vo.UserId;
-import com.auth.jwt.domain.user.vo.Username;
+import com.auth.jwt.user.domain.vo.Nickname;
+import com.auth.jwt.user.domain.vo.Password;
+import com.auth.jwt.user.domain.vo.UserId;
+import com.auth.jwt.user.domain.vo.Username;
 import java.util.Set;
 import lombok.Getter;
 

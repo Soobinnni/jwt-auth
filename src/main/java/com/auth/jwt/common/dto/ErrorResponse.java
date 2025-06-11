@@ -1,6 +1,6 @@
-package com.auth.jwt.presentation.dto.common.response;
+package com.auth.jwt.common.dto;
 
-import com.auth.jwt.global.exception.ExceptionDetail;
+import com.auth.jwt.common.exception.ExceptionDetail;
 
 public record ErrorResponse(Error error) {
   public static ErrorResponse from(ExceptionDetail detail) {

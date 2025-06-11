@@ -1,8 +1,10 @@
-package com.auth.jwt.presentation.exception;
+package com.auth.jwt.common.handler;
 
-import com.auth.jwt.global.exception.CustomException;
-import com.auth.jwt.global.exception.ExceptionDetail;
-import com.auth.jwt.presentation.dto.common.response.ErrorResponse;
+import com.auth.jwt.common.dto.ErrorResponse;
+import com.auth.jwt.common.exception.CustomException;
+import com.auth.jwt.common.exception.ExceptionDetail;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +49,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   private ResponseEntity<ErrorResponse> buildResponse(
       ExceptionDetail detail, HttpStatus statusCode) {
     return ResponseEntity.status(statusCode).body(ErrorResponse.from(detail));
+  }
+
+  @Getter
+  @RequiredArgsConstructor
+  enum GlobalExceptionDetail implements ExceptionDetail {
+    INTERNAL("INTERNAL_EXCEPTION", "내부 오류가 발생하였습니니다.");
+
+    private final String code;
+    private final String message;
   }
 }

@@ -1,4 +1,4 @@
-package com.auth.jwt.domain.auth.vo;
+package com.auth.jwt.auth.domain.vo;
 
 public class TokenValue {
   private final String value;

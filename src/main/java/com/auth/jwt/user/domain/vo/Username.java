@@ -1,4 +1,4 @@
-package com.auth.jwt.domain.user.vo;
+package com.auth.jwt.user.domain.vo;
 
 public class Username {
   private static final int MIN_LENGTH = 2;

@@ -1,4 +1,4 @@
-package com.auth.jwt.domain.user;
+package com.auth.jwt.user.domain;
 
 public interface PasswordEncryptionProvider {
   String encode(String plainPassword);

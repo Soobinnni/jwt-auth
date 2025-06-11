@@ -1,4 +1,4 @@
-package com.auth.jwt.domain.common;
+package com.auth.jwt.user.domain;
 
 public interface IdGenerator {
   String generate();

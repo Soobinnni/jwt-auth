@@ -1,8 +1,8 @@
-package com.auth.jwt.domain.auth;
+package com.auth.jwt.auth.domain.entity;
 
-import com.auth.jwt.domain.auth.vo.TokenExpiry;
-import com.auth.jwt.domain.auth.vo.TokenValue;
-import com.auth.jwt.domain.user.vo.UserId;
+import com.auth.jwt.auth.domain.vo.TokenExpiry;
+import com.auth.jwt.auth.domain.vo.TokenValue;
+import com.auth.jwt.user.domain.vo.UserId;
 import lombok.Getter;
 
 @Getter

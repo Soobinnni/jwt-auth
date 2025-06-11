@@ -1,4 +1,4 @@
-package com.auth.jwt.domain.user.vo;
+package com.auth.jwt.user.domain.vo;
 
 public class UserId {
   private final String value;

@@ -1,4 +1,4 @@
-package com.auth.jwt.global.exception;
+package com.auth.jwt.common.exception;
 
 public class CustomException extends RuntimeException {
   private final ExceptionDetail exceptionDetail;
