@@ -1,5 +1,7 @@
 package com.auth.jwt.user.domain.entity;
 
+import com.auth.jwt.user.domain.service.IdGenerator;
+import com.auth.jwt.user.domain.service.PasswordEncryptionProvider;
 import com.auth.jwt.user.domain.vo.Nickname;
 import com.auth.jwt.user.domain.vo.Password;
 import com.auth.jwt.user.domain.vo.UserId;
@@ -21,6 +23,21 @@ public class User {
     this.password = password;
     this.nickname = nickname;
     this.roles = roles;
+  }
+
+  public static User create(
+      IdGenerator idGenerator,
+      String username,
+      String password,
+      PasswordEncryptionProvider encryptionProvider,
+      String nickname) {
+    Long userId = idGenerator.generate();
+    return new User(
+        UserId.of(userId),
+        Username.of(username),
+        Password.of(password, encryptionProvider),
+        Nickname.of(nickname),
+        Set.of(Role.getDefault()));
   }
 
   @Override

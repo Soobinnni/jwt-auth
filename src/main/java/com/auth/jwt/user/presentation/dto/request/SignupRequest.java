@@ -1,6 +1,6 @@
-package com.auth.jwt.presentation.dto.request;
+package com.auth.jwt.user.presentation.dto.request;
 
-import com.auth.jwt.application.dto.auth.SignupCommand;
+import com.auth.jwt.user.application.dto.command.SignupCommand;
 import jakarta.validation.constraints.NotBlank;
 
 public record SignupRequest(

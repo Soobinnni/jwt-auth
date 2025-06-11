@@ -1,9 +1,9 @@
-package com.auth.jwt.presentation.controller.user;
+package com.auth.jwt.user.presentation;
 
-import com.auth.jwt.application.service.user.UserService;
-import com.auth.jwt.domain.user.User;
-import com.auth.jwt.presentation.dto.request.SignupRequest;
-import com.auth.jwt.presentation.dto.response.SignupResponse;
+import com.auth.jwt.user.application.UserService;
+import com.auth.jwt.user.domain.entity.User;
+import com.auth.jwt.user.presentation.dto.request.SignupRequest;
+import com.auth.jwt.user.presentation.dto.response.SignupResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
