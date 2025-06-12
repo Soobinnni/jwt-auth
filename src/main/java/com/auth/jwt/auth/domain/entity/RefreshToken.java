@@ -2,22 +2,21 @@ package com.auth.jwt.auth.domain.entity;
 
 import com.auth.jwt.auth.domain.vo.TokenExpiry;
 import com.auth.jwt.auth.domain.vo.TokenValue;
-import com.auth.jwt.user.domain.vo.UserId;
 import lombok.Getter;
 
 @Getter
 public class RefreshToken {
-  private final UserId userId;
+  private final Long userId;
   private final TokenValue tokenValue;
   private final TokenExpiry expiry;
 
-  private RefreshToken(TokenValue tokenValue, UserId userId, TokenExpiry expiry) {
+  private RefreshToken(TokenValue tokenValue, Long userId, TokenExpiry expiry) {
     this.tokenValue = tokenValue;
     this.userId = userId;
     this.expiry = expiry;
   }
 
-  public static RefreshToken create(TokenValue tokenValue, UserId userId, TokenExpiry expiry) {
+  public static RefreshToken create(TokenValue tokenValue, Long userId, TokenExpiry expiry) {
     return new RefreshToken(tokenValue, userId, expiry);
   }
 

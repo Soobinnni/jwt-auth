@@ -4,18 +4,14 @@ public class TokenValue {
   private final String value;
 
   private TokenValue(String value) {
+    if (value == null || value.trim().isEmpty()) {
+      throw new IllegalArgumentException("토큰 값은 비어있을 수 없습니다.");
+    }
     this.value = value;
   }
 
   public static TokenValue of(String value) {
-    validateToken(value);
     return new TokenValue(value);
-  }
-
-  private static void validateToken(String value) {
-    if (value == null || value.isBlank()) {
-      throw new IllegalArgumentException("토큰 값이 비어있습니다. 토큰 값은 필수입니다.");
-    }
   }
 
   public String getValue() {
