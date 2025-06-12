@@ -2,6 +2,7 @@ package com.auth.jwt.user.application;
 
 import com.auth.jwt.user.application.dto.command.SignupCommand;
 import com.auth.jwt.user.application.exception.UserAlreadyExistsException;
+import com.auth.jwt.user.application.exception.UserExceptionHandler;
 import com.auth.jwt.user.domain.entity.User;
 import com.auth.jwt.user.domain.repository.UserRepository;
 import com.auth.jwt.user.domain.service.IdGenerator;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@UserExceptionHandler
 @RequiredArgsConstructor
 public class UserService {
   private final UserRepository userRepository;
@@ -20,18 +22,18 @@ public class UserService {
   private final PasswordEncryptionProvider encryptionProvider;
 
   public User signup(SignupCommand command) {
-    String username = command.username();
 
-    if (userRepository.existsByUsername(Username.of(username))) {
-      throw new UserAlreadyExistsException("이미 가입된 사용자입니다.");
+    String usernameValue = command.username();
+
+    if (userRepository.existsByUsername(Username.of(usernameValue))) {
+      throw new UserAlreadyExistsException();
     }
 
     User user =
         User.create(
-            idGenerator, username, command.password(), encryptionProvider, command.nickname());
+            idGenerator, usernameValue, command.password(), encryptionProvider, command.nickname());
     User savedUser = userRepository.save(user);
-
-    log.info("신규 회원 가입, usename: {}", savedUser.getUsername());
+    log.info("신규 회원 가입, username: {}", savedUser.getUsername());
 
     return savedUser;
   }

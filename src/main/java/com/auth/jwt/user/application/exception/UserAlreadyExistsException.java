@@ -1,7 +1,10 @@
 package com.auth.jwt.user.application.exception;
 
-public class UserAlreadyExistsException extends RuntimeException {
-  public UserAlreadyExistsException(String message) {
-    super(message);
+import com.auth.jwt.common.exception.DuplicateResourceException;
+import com.auth.jwt.common.exception.ExceptionDetail;
+
+public class UserAlreadyExistsException extends DuplicateResourceException {
+  public UserAlreadyExistsException() {
+    super(ExceptionDetail.of("USER_ALREADY_EXISTS", "이미 가입된 사용자입니다."));
   }
 }
