@@ -1,7 +1,5 @@
 package com.auth.jwt.user.presentation;
 
-import com.auth.jwt.common.annotation.AuthPrincipal;
-import com.auth.jwt.common.model.CustomPrincipal;
 import com.auth.jwt.user.application.UserCommandService;
 import com.auth.jwt.user.domain.entity.User;
 import com.auth.jwt.user.presentation.dto.request.SignupRequest;
@@ -10,7 +8,6 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,14 +22,6 @@ public class UserController {
     SignupResponse response = SignupResponse.from(user);
 
     return ResponseEntity.created(buildResourceLocation(response.userId())).body(response);
-  }
-
-  @GetMapping
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<CustomPrincipal> getPrincipalUser(
-      @AuthPrincipal CustomPrincipal principal) {
-
-    return ResponseEntity.ok().body(principal);
   }
 
   private URI buildResourceLocation(Long userId) {
