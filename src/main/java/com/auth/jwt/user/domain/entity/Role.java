@@ -15,4 +15,8 @@ public enum Role {
   public static Role getDefault() {
     return USER;
   }
+
+  public String getAuthority() {
+    return "ROLE_" + this.name();
+  }
 }

@@ -5,6 +5,7 @@ import com.auth.jwt.user.domain.repository.UserRepository;
 import com.auth.jwt.user.domain.vo.UserId;
 import com.auth.jwt.user.domain.vo.Username;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Repository;
 
@@ -23,5 +24,20 @@ public class InMemoryUserRepository implements UserRepository {
   @Override
   public boolean existsByUsername(Username username) {
     return usernameIndex.containsKey(username);
+  }
+
+  @Override
+  public boolean existsById(UserId userId) {
+    return userStore.containsKey(userId);
+  }
+
+  @Override
+  public Optional<User> findById(UserId userId) {
+    return Optional.ofNullable(userStore.get(userId));
+  }
+
+  @Override
+  public Optional<User> findByUsername(Username username) {
+    return Optional.ofNullable(usernameIndex.get(username));
   }
 }
