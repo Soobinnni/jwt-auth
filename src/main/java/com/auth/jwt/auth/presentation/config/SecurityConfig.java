@@ -57,8 +57,14 @@ public class SecurityConfig {
             requests
                 .requestMatchers(HttpMethod.POST, "/errors")
                 .permitAll()
-                // register auth
+                // Swagger UI 접근 허용
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                .permitAll()
+                // register auth (Filter 기반)
                 .requestMatchers(HttpMethod.POST, "/login", "/refresh-token")
+                .permitAll()
+                // register auth (REST API)
+                .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh")
                 .permitAll()
                 // register user
                 .requestMatchers(HttpMethod.POST, "/users")

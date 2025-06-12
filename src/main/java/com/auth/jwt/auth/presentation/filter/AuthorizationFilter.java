@@ -36,7 +36,11 @@ public class AuthorizationFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getRequestURI();
     String method = request.getMethod();
-    return (path.equals("/users") && method.equals("POST")) || (path.equals("/errors"));
+    return (path.startsWith("/swagger-ui"))
+        || (path.startsWith("/v3/api-docs"))
+        || (path.equals("/swagger-ui.html"))
+        || (path.equals("/users") && method.equals("POST"))
+        || (path.equals("/errors"));
   }
 
   @Override
