@@ -1,10 +1,15 @@
 name: CI/CD Pipeline for JWT Auth
 
+#on:
+#  push:
+#    branches: [ "main", "develop" ]
+#  pull_request:
+#    branches: [ "main", "develop" ]
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "test/deploy" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "test/deploy" ]
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
@@ -45,7 +50,7 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    #    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -76,7 +81,7 @@ jobs:
   deploy:
     needs: [ test, build ]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    #    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -111,55 +116,12 @@ jobs:
           source: "jwt-auth-app.tar.gz"
           target: "/home/ubuntu/projects/"
 
-      - name: Deploy to EC2
+      - name: Run deploy.sh on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # projects 디렉토리로 이동
-            cd ~/projects
-            
-            # Docker 이미지 로드
-            docker load < jwt-auth-app.tar.gz
-            
-            # 기존 컨테이너 정리 (graceful shutdown)
-            if docker ps -q -f name=jwt-auth-container; then
-              echo "Stopping existing container..."
-              docker stop jwt-auth-container --time=30
-              docker rm jwt-auth-container
-            fi
-            
-            # 새 컨테이너 실행
-            docker run -d \
-              --name jwt-auth-container \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              --env-file .env \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              --health-cmd="curl -f http://localhost:8080/actuator/health || exit 1" \
-              --health-interval=30s \
-              --health-timeout=10s \
-              --health-retries=3 \
-              jwt-auth-app:latest
-            
-            # 컨테이너 시작 대기
-            echo "Waiting for container to start..."
-            sleep 10
-            
-            # 컨테이너 상태 확인
-            if docker ps | grep jwt-auth-container; then
-              echo "Deployment successful!"
-              docker logs jwt-auth-container --tail=20
-            else
-              echo "Deployment failed!"
-              docker logs jwt-auth-container --tail=50
-              exit 1
-            fi
-            
-            # 정리 작업
-            rm -f jwt-auth-app.tar.gz
-            
-            # 사용하지 않는 이미지 정리
-            docker image prune -af --filter "until=24h"
+            cd ~/scripts
+            ./deploy.sh
