@@ -1,0 +1,53 @@
+package com.auth.jwt.user.application;
+
+import static org.assertj.core.api.Assertions.*;
+
+import com.auth.jwt.user.application.dto.command.SignupCommand;
+import com.auth.jwt.user.application.exception.UserAlreadyExistsException;
+import com.auth.jwt.user.domain.entity.Role;
+import com.auth.jwt.user.domain.entity.User;
+import com.auth.jwt.user.domain.repository.UserRepository;
+import com.auth.jwt.user.domain.vo.Username;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+@DisplayName("[UserSignupServiceTest] 회원가입 서비스 테스트")
+class UserSignupServiceTest {
+
+  @Autowired private UserService userService;
+
+  @Autowired private UserRepository userRepository;
+
+  @Test
+  @DisplayName("회원가입 성공 - 정상적인 사용자 정보")
+  void signupSuccess() {
+    // given
+    SignupCommand command = new SignupCommand("validuser", "password123", "ValidNick");
+
+    // when
+    User result = userService.signup(command);
+
+    // then
+    assertThat(result.getUsername().getValue()).isEqualTo("validuser");
+    assertThat(result.getNickname().getValue()).isEqualTo("ValidNick");
+    assertThat(result.getRoles()).containsOnly(Role.USER);
+    assertThat(userRepository.existsByUsername(Username.of("validuser"))).isTrue();
+  }
+
+  @Test
+  @DisplayName("회원가입 실패 - 이미 존재하는 사용자명")
+  void signupFailDuplicateUsername() {
+    // given
+    SignupCommand firstCommand = new SignupCommand("duplicateuser", "password123", "FirstNick");
+    SignupCommand secondCommand = new SignupCommand("duplicateuser", "password456", "SecondNick");
+
+    userService.signup(firstCommand);
+
+    // when & then
+    assertThatThrownBy(() -> userService.signup(secondCommand))
+        .isInstanceOf(UserAlreadyExistsException.class);
+  }
+}
