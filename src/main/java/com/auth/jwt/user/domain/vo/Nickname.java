@@ -1,10 +1,12 @@
 package com.auth.jwt.user.domain.vo;
 
+import com.auth.jwt.user.domain.exception.UserDomainField;
+import com.auth.jwt.user.domain.exception.UserEmptyException;
+import com.auth.jwt.user.domain.exception.UserInvalidLengthException;
+
 public class Nickname {
   private static final int MIN_LENGTH = 1;
   private static final int MAX_LENGTH = 30;
-  private static final String INVALID_LENGTH_MESSAGE =
-      "닉네임은 최소 " + MIN_LENGTH + " 길이와, 최대 " + MAX_LENGTH + " 길이여야 합니다.";
 
   private final String value;
 
@@ -19,11 +21,11 @@ public class Nickname {
 
   private static void validateNickname(String value) {
     if (value == null || value.isBlank()) {
-      throw new IllegalArgumentException("닉네임이 비어있습니다. 닉네임은 필수입니다.");
+      throw new UserEmptyException(UserDomainField.NICKNAME);
     }
 
     if (value.length() < MIN_LENGTH || value.length() > MAX_LENGTH) {
-      throw new IllegalArgumentException(INVALID_LENGTH_MESSAGE);
+      throw new UserInvalidLengthException(UserDomainField.NICKNAME, MIN_LENGTH, MAX_LENGTH);
     }
   }
 
