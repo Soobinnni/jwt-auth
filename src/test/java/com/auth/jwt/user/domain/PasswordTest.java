@@ -26,8 +26,8 @@ class PasswordTest {
   }
 
   @Test
-  @DisplayName("Password 생성 성공 - 유효한 패스워드")
-  void createPasswordSuccess() {
+  @DisplayName("비밀번호 생성 성공 - 유효한 형식")
+  void should_CreatePassword_When_ValidFormatProvided() {
     // given
     String validPassword = "password123"; // 영문자 + 숫자, 8-20자
 
@@ -36,8 +36,8 @@ class PasswordTest {
   }
 
   @Test
-  @DisplayName("Password 생성 실패 - 길이 부족")
-  void createPasswordFailTooShort() {
+  @DisplayName("비밀번호 생성 실패 - 최소 길이 미달")
+  void should_ThrowException_When_PasswordTooShort() {
     // given
     String shortPassword = "pass12"; // 6글자
 
@@ -48,8 +48,8 @@ class PasswordTest {
   }
 
   @Test
-  @DisplayName("Password 생성 실패 - 길이 초과")
-  void createPasswordFailTooLong() {
+  @DisplayName("비밀번호 생성 실패 - 최대 길이 초과")
+  void should_ThrowException_When_PasswordTooLong() {
     // given
     String longPassword = "a".repeat(21);
 
@@ -60,8 +60,8 @@ class PasswordTest {
   }
 
   @Test
-  @DisplayName("Password 생성 실패 - 숫자 없음")
-  void createPasswordFailNoNumber() {
+  @DisplayName("비밀번호 생성 실패 - 숫자 미포함")
+  void should_ThrowException_When_PasswordLacksNumbers() {
     // given
     String passwordWithoutNumber = "password"; // 숫자 없음
 
@@ -72,8 +72,8 @@ class PasswordTest {
   }
 
   @Test
-  @DisplayName("Password 생성 실패 - 영문자 없음")
-  void createPasswordFailNoLetter() {
+  @DisplayName("비밀번호 생성 실패 - 영문자 미포함")
+  void should_ThrowException_When_PasswordLacksLetters() {
     // given
     String passwordWithoutLetter = "12345678"; // 영문자 없음
 
@@ -84,8 +84,8 @@ class PasswordTest {
   }
 
   @Test
-  @DisplayName("Password 생성 실패 - null 입력")
-  void createPasswordFailNull() {
+  @DisplayName("비밀번호 생성 실패 - null 값 입력")
+  void should_ThrowException_When_PasswordIsNull() {
     // when & then
     assertThatThrownBy(() -> Password.of(null, encryptionProvider))
         .isInstanceOf(UserEmptyException.class)

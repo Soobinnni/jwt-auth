@@ -13,7 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-@DisplayName("[UserDomainTest] User 도메인 검증 테스트")
+@DisplayName("[UserDomainTest] User 도메인 엔티티 검증 테스트")
 class UserDomainTest {
 
   private final IdGenerator idGenerator = () -> 1L;
@@ -26,8 +26,8 @@ class UserDomainTest {
   }
 
   @Test
-  @DisplayName("사용자 생성 성공 - 정상적인 입력값")
-  void createUserSuccess() {
+  @DisplayName("사용자 생성 성공 - 유효한 입력값")
+  void should_CreateUser_When_ValidInputProvided() {
     // when
     User user =
         User.create(idGenerator, "validuser", "password123", encryptionProvider, "ValidNick");

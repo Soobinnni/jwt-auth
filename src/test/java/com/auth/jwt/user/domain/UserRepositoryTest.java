@@ -15,7 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-@DisplayName("[UserRepositoryTest] UserRepository 테스트")
+@DisplayName("[UserRepositoryTest] 사용자 저장소 테스트")
 class UserRepositoryTest {
 
   private final UserRepository userRepository = new InMemoryUserRepository();
@@ -29,8 +29,8 @@ class UserRepositoryTest {
   }
 
   @Test
-  @DisplayName("사용자 저장 및 조회 성공")
-  void saveAndExistsUser() {
+  @DisplayName("사용자 저장 및 존재 여부 확인 성공")
+  void should_SaveAndConfirmExistence_When_UserIsStored() {
     // given
     User user = User.create(idGenerator, "testuser", "password123", encryptionProvider, "TestNick");
 
@@ -44,8 +44,8 @@ class UserRepositoryTest {
   }
 
   @Test
-  @DisplayName("존재하지 않는 사용자명 조회")
-  void notExistsUser() {
+  @DisplayName("사용자 존재 여부 확인 실패 - 존재하지 않는 사용자명")
+  void should_ReturnFalse_When_UsernameDoesNotExist() {
     // when
     boolean exists = userRepository.existsByUsername(Username.of("nonexistent"));
 

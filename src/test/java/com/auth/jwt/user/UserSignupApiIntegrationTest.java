@@ -29,20 +29,22 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DisplayName("[UserSignupControllerTest] 회원가입 테스트 - 통합 테스트")
+@DisplayName("[UserSignupApiIntegrationTest] 회원가입 API 통합 테스트")
 class UserSignupApiIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
-  @MockitoBean
-  private UserCommandService userCommandService;
+  @MockitoBean private UserCommandService userCommandService;
+
+  private User createMockUser(Long id, String username, String nickname) {
+    return new User(UserId.of(id), Username.of(username), null, Nickname.of(nickname), Role.USER);
+  }
 
   @Test
-  @DisplayName("회원가입 성공 - 올바른 입력")
-  void signupSuccess() throws Exception {
+  @DisplayName("회원가입 성공 - 유효한 입력 데이터")
+  void should_CreateUser_When_ValidInputProvided() throws Exception {
     // given
-    User mockUser =
-        new User(UserId.of(1L), Username.of("testuser"), null, Nickname.of("TestNick"), Role.USER);
+    User mockUser = createMockUser(1L, "testuser", "TestNick");
     SignupRequest request = new SignupRequest("testuser", "password123", "TestNick");
     given(userCommandService.signup(ArgumentMatchers.any(SignupCommand.class)))
         .willReturn(mockUser);
@@ -65,7 +67,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 이미 존재하는 사용자명")
-  void signupFailDuplicateUsername() throws Exception {
+  void should_RejectSignup_When_UsernameAlreadyExists() throws Exception {
     // given
     SignupRequest request = new SignupRequest("duplicateuser", "password123", "TestNick");
     willThrow(new UserAlreadyExistsException()).given(userCommandService).signup(any());
@@ -84,7 +86,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 사용자명이 null")
-  void signupFailUsernameNull() throws Exception {
+  void should_RejectSignup_When_UsernameIsNull() throws Exception {
     // given
     SignupRequest request = new SignupRequest(null, "password123", "TestNick");
 
@@ -102,7 +104,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 사용자명이 빈 문자열")
-  void signupFailUsernameBlank() throws Exception {
+  void should_RejectSignup_When_UsernameIsBlank() throws Exception {
     // given
     SignupRequest request = new SignupRequest("", "password123", "TestNick");
 
@@ -120,7 +122,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 비밀번호가 null")
-  void signupFailPasswordNull() throws Exception {
+  void should_RejectSignup_When_PasswordIsNull() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", null, "TestNick");
 
@@ -138,7 +140,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 비밀번호가 빈 문자열")
-  void signupFailPasswordBlank() throws Exception {
+  void should_RejectSignup_When_PasswordIsBlank() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "", "TestNick");
 
@@ -156,7 +158,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 닉네임이 null")
-  void signupFailNicknameNull() throws Exception {
+  void should_RejectSignup_When_NicknameIsNull() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "password123", null);
 
@@ -174,7 +176,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 닉네임이 빈 문자열")
-  void signupFailNicknameBlank() throws Exception {
+  void should_RejectSignup_When_NicknameIsBlank() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "password123", "");
 
@@ -192,7 +194,7 @@ class UserSignupApiIntegrationTest {
 
   @Test
   @DisplayName("회원가입 실패 - 잘못된 JSON 형식")
-  void signupFailInvalidJson() throws Exception {
+  void should_RejectSignup_When_JsonFormatIsInvalid() throws Exception {
     // given
     String invalidJson = "{ invalid json }";
 
@@ -204,8 +206,8 @@ class UserSignupApiIntegrationTest {
   }
 
   @Test
-  @DisplayName("회원가입 실패 - Content-Type이 없는 경우")
-  void signupFailNoContentType() throws Exception {
+  @DisplayName("회원가입 실패 - Content-Type 헤더 누락")
+  void should_RejectSignup_When_ContentTypeHeaderMissing() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "password123", "TestNick");
 
