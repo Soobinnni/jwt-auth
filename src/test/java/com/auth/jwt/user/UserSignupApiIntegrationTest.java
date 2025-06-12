@@ -1,16 +1,12 @@
-package com.auth.jwt.user.presentation;
+package com.auth.jwt.user;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.auth.jwt.auth.presentation.filter.AuthenticationFilter;
-import com.auth.jwt.auth.presentation.filter.AuthorizationFilter;
-import com.auth.jwt.auth.presentation.filter.RefreshTokenFilter;
 import com.auth.jwt.user.application.UserCommandService;
 import com.auth.jwt.user.application.dto.command.SignupCommand;
 import com.auth.jwt.user.application.exception.UserAlreadyExistsException;
@@ -21,45 +17,25 @@ import com.auth.jwt.user.domain.vo.UserId;
 import com.auth.jwt.user.domain.vo.Username;
 import com.auth.jwt.user.presentation.dto.request.SignupRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(
-    controllers = UserController.class,
-    excludeAutoConfiguration = {SecurityAutoConfiguration.class},
-    excludeFilters =
-        @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE,
-            classes = {
-              AuthorizationFilter.class,
-              AuthenticationFilter.class,
-              RefreshTokenFilter.class
-            }))
-@Import(UserSignupControllerTest.TestConfig.class)
-@DisplayName("[UserSignupControllerTest] 회원가입 테스트")
-class UserSignupControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@DisplayName("[UserSignupControllerTest] 회원가입 테스트 - 통합 테스트")
+class UserSignupApiIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
-  @Autowired private UserCommandService userCommandService;
-
-  @BeforeEach
-  void setUp() {
-    Mockito.reset(userCommandService);
-  }
+  @MockitoBean
+  private UserCommandService userCommandService;
 
   @Test
   @DisplayName("회원가입 성공 - 올바른 입력")
@@ -75,7 +51,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -89,6 +64,25 @@ class UserSignupControllerTest {
   }
 
   @Test
+  @DisplayName("회원가입 실패 - 이미 존재하는 사용자명")
+  void signupFailDuplicateUsername() throws Exception {
+    // given
+    SignupRequest request = new SignupRequest("duplicateuser", "password123", "TestNick");
+    willThrow(new UserAlreadyExistsException()).given(userCommandService).signup(any());
+
+    // when & then
+    mockMvc
+        .perform(
+            post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andDo(print())
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("USER_ALREADY_EXISTS"))
+        .andExpect(jsonPath("$.error.message").value("이미 가입된 사용자입니다."));
+  }
+
+  @Test
   @DisplayName("회원가입 실패 - 사용자명이 null")
   void signupFailUsernameNull() throws Exception {
     // given
@@ -98,7 +92,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -117,7 +110,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -136,7 +128,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -155,7 +146,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -174,7 +164,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -193,33 +182,12 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT"))
         .andExpect(jsonPath("$.error.details.nickname").value("닉네임은 필수입니다."));
-  }
-
-  @Test
-  @DisplayName("회원가입 실패 - 이미 존재하는 사용자")
-  void signupFailUserAlreadyExists() throws Exception {
-    // given
-    SignupRequest request = new SignupRequest("existinguser", "password123", "TestNick");
-    willThrow(new UserAlreadyExistsException()).given(userCommandService).signup(any());
-
-    // when & then
-    mockMvc
-        .perform(
-            post("/users")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andDo(print())
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.error.code").value("USER_ALREADY_EXISTS"))
-        .andExpect(jsonPath("$.error.message").value("이미 가입된 사용자입니다."));
   }
 
   @Test
@@ -230,11 +198,7 @@ class UserSignupControllerTest {
 
     // when & then
     mockMvc
-        .perform(
-            post("/users")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidJson))
+        .perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(invalidJson))
         .andDo(print())
         .andExpect(status().isBadRequest());
   }
@@ -247,16 +211,8 @@ class UserSignupControllerTest {
 
     // when & then
     mockMvc
-        .perform(post("/users").with(csrf()).content(objectMapper.writeValueAsString(request)))
+        .perform(post("/users").content(objectMapper.writeValueAsString(request)))
         .andDo(print())
         .andExpect(status().isUnsupportedMediaType());
-  }
-
-  @TestConfiguration
-  static class TestConfig {
-    @Bean
-    public UserCommandService userService() {
-      return Mockito.mock(UserCommandService.class);
-    }
   }
 }
