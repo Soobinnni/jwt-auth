@@ -8,7 +8,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.auth.jwt.user.application.UserService;
+import com.auth.jwt.auth.presentation.filter.AuthenticationFilter;
+import com.auth.jwt.auth.presentation.filter.AuthorizationFilter;
+import com.auth.jwt.auth.presentation.filter.RefreshTokenFilter;
+import com.auth.jwt.user.application.UserCommandService;
 import com.auth.jwt.user.application.dto.command.SignupCommand;
 import com.auth.jwt.user.application.exception.UserAlreadyExistsException;
 import com.auth.jwt.user.domain.entity.Role;
@@ -18,7 +21,6 @@ import com.auth.jwt.user.domain.vo.UserId;
 import com.auth.jwt.user.domain.vo.Username;
 import com.auth.jwt.user.presentation.dto.request.SignupRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,24 +31,34 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
     controllers = UserController.class,
-    excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class},
+    excludeFilters =
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = {
+              AuthorizationFilter.class,
+              AuthenticationFilter.class,
+              RefreshTokenFilter.class
+            }))
 @Import(UserSignupControllerTest.TestConfig.class)
 @DisplayName("[UserSignupControllerTest] 회원가입 테스트")
 class UserSignupControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
-  @Autowired private UserService userService;
+  @Autowired private UserCommandService userCommandService;
 
   @BeforeEach
   void setUp() {
-    Mockito.reset(userService);
+    Mockito.reset(userCommandService);
   }
 
   @Test
@@ -54,14 +66,10 @@ class UserSignupControllerTest {
   void signupSuccess() throws Exception {
     // given
     User mockUser =
-        new User(
-            UserId.of(1L),
-            Username.of("testuser"),
-            null,
-            Nickname.of("TestNick"),
-            Set.of(Role.USER));
+        new User(UserId.of(1L), Username.of("testuser"), null, Nickname.of("TestNick"), Role.USER);
     SignupRequest request = new SignupRequest("testuser", "password123", "TestNick");
-    given(userService.signup(ArgumentMatchers.any(SignupCommand.class))).willReturn(mockUser);
+    given(userCommandService.signup(ArgumentMatchers.any(SignupCommand.class)))
+        .willReturn(mockUser);
 
     // when & then
     mockMvc
@@ -75,7 +83,7 @@ class UserSignupControllerTest {
         .andExpect(jsonPath("$.userId").value(1L))
         .andExpect(jsonPath("$.username").value("testuser"))
         .andExpect(jsonPath("$.nickname").value("TestNick"))
-        .andExpect(jsonPath("$.roles[0]").value("일반 사용자"))
+        .andExpect(jsonPath("$.role").value("일반 사용자"))
         .andExpect(jsonPath("$.password").doesNotExist())
         .andExpect(header().string("Location", "/users/1"));
   }
@@ -199,7 +207,7 @@ class UserSignupControllerTest {
   void signupFailUserAlreadyExists() throws Exception {
     // given
     SignupRequest request = new SignupRequest("existinguser", "password123", "TestNick");
-    willThrow(new UserAlreadyExistsException()).given(userService).signup(any());
+    willThrow(new UserAlreadyExistsException()).given(userCommandService).signup(any());
 
     // when & then
     mockMvc
@@ -247,8 +255,8 @@ class UserSignupControllerTest {
   @TestConfiguration
   static class TestConfig {
     @Bean
-    public UserService userService() {
-      return Mockito.mock(UserService.class);
+    public UserCommandService userService() {
+      return Mockito.mock(UserCommandService.class);
     }
   }
 }
