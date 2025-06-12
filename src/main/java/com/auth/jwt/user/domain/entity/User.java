@@ -16,7 +16,7 @@ public class User {
   private final Nickname nickname;
   private final Role role;
 
-  private User(UserId id, Username username, Password password, Nickname nickname, Role role) {
+  public User(UserId id, Username username, Password password, Nickname nickname, Role role) {
     this.id = id;
     this.username = username;
     this.password = password;
