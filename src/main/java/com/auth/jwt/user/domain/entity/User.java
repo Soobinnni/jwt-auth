@@ -16,7 +16,7 @@ public class User {
   private final Nickname nickname;
   private final Role role;
 
-  public User(UserId id, Username username, Password password, Nickname nickname, Role role) {
+  private User(UserId id, Username username, Password password, Nickname nickname, Role role) {
     this.id = id;
     this.username = username;
     this.password = password;
@@ -31,12 +31,26 @@ public class User {
       PasswordEncryptionProvider encryptionProvider,
       String nickname) {
     Long userId = idGenerator.generate();
+    return User.create(userId, username, password, encryptionProvider, nickname, Role.getDefault());
+  }
+
+  public static User create(
+      Long id,
+      String username,
+      String password,
+      PasswordEncryptionProvider encryptionProvider,
+      String nickname,
+      Role role) {
     return new User(
-        UserId.of(userId),
+        UserId.of(id),
         Username.of(username),
         Password.of(password, encryptionProvider),
         Nickname.of(nickname),
-        Role.getDefault());
+        role);
+  }
+
+  public User grantAdminRole() {
+    return new User(id, username, password, nickname, Role.ADMIN);
   }
 
   @Override
@@ -50,5 +64,17 @@ public class User {
   @Override
   public int hashCode() {
     return id.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "User: id= "
+        + id.toString()
+        + ", username= "
+        + username.toString()
+        + ", nickname= "
+        + nickname.toString()
+        + ", role= "
+        + role.getAuthority();
   }
 }
