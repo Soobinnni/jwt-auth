@@ -35,6 +35,6 @@ class UserDomainTest {
     // then
     assertThat(user.getUsername().getValue()).isEqualTo("validuser");
     assertThat(user.getNickname().getValue()).isEqualTo("ValidNick");
-    assertThat(user.getRoles()).containsOnly(Role.USER);
+    assertThat(user.getRole()).isEqualTo(Role.USER);
   }
 }
