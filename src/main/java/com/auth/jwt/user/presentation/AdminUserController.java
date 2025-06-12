@@ -18,7 +18,7 @@ public class AdminUserController {
 
   @PatchMapping("/{userId}/roles")
   public ResponseEntity<UserResponse> grantAdminRole(@PathVariable Long userId) {
-    RoleGrantCommand command = RoleGrantCommand.of(userId);
+    RoleGrantCommand command = new RoleGrantCommand(userId);
     UserResponse response = UserResponse.from(userCommandService.grantAdminRole(command));
 
     return ResponseEntity.ok(response);
