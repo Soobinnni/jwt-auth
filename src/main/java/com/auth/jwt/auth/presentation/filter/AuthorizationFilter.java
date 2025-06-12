@@ -56,7 +56,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         setAuthentication(result.getUserId());
       } else {
         log.warn("원인: 토큰이 존재하지 않음, 토큰: {}", token);
-        handleAuthorizationFailure(request, response, "TOKEN_INVALID", "유효하지 않은 토큰 값입니다.", null);
+        handleAuthorizationFailure(request, response, "INVALID_TOKEN", "유효하지 않은 토큰 값입니다.", null);
         return;
       }
 
