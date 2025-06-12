@@ -1,5 +1,9 @@
 package com.auth.jwt.user.domain.vo;
 
+import com.auth.jwt.user.domain.exception.UserDomainField;
+import com.auth.jwt.user.domain.exception.UserEmptyException;
+import com.auth.jwt.user.domain.exception.UserInvalidValueException;
+
 public class UserId {
   private final Long value;
 
@@ -14,10 +18,10 @@ public class UserId {
 
   private static void validateUserId(Long value) {
     if (value == null) {
-      throw new IllegalArgumentException("사용자 식별자가 비어있습니다. 사용자 식별자는 필수입니다.");
+      throw new UserEmptyException(UserDomainField.ID);
     }
     if (value <= 0) {
-      throw new IllegalArgumentException("사용자 식별자는 양수여야 합니다.");
+      throw new UserInvalidValueException(UserDomainField.ID, "사용자 식별자는 양수여야 합니다.");
     }
   }
 

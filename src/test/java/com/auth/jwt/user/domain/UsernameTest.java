@@ -2,6 +2,8 @@ package com.auth.jwt.user.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.auth.jwt.user.domain.exception.UserEmptyException;
+import com.auth.jwt.user.domain.exception.UserInvalidLengthException;
 import com.auth.jwt.user.domain.vo.Username;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,8 @@ class UsernameTest {
 
     // when & then
     assertThatThrownBy(() -> Username.of(shortUsername))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("최소 2 길이와, 최대 50 길이여야 합니다");
+        .isInstanceOf(UserInvalidLengthException.class)
+        .hasMessageContaining("아이디가 최소 2 길이와, 최대 50 길이여야 합니다.");
   }
 
   @Test
@@ -41,8 +43,8 @@ class UsernameTest {
 
     // when & then
     assertThatThrownBy(() -> Username.of(longUsername))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("최소 2 길이와, 최대 50 길이여야 합니다");
+        .isInstanceOf(UserInvalidLengthException.class)
+        .hasMessageContaining("아이디가 최소 2 길이와, 최대 50 길이여야 합니다.");
   }
 
   @Test
@@ -50,8 +52,8 @@ class UsernameTest {
   void createUsernameFailNull() {
     // when & then
     assertThatThrownBy(() -> Username.of(null))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("로그인 아이디가 비어있습니다");
+        .isInstanceOf(UserEmptyException.class)
+        .hasMessageContaining("아이디가 비어있습니다. 아이디는 필수입니다.");
   }
 
   @Test
@@ -59,11 +61,11 @@ class UsernameTest {
   void createUsernameFailBlank() {
     // when & then
     assertThatThrownBy(() -> Username.of(""))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("로그인 아이디가 비어있습니다");
+        .isInstanceOf(UserEmptyException.class)
+        .hasMessageContaining("아이디가 비어있습니다. 아이디는 필수입니다.");
 
     assertThatThrownBy(() -> Username.of("   "))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("로그인 아이디가 비어있습니다");
+        .isInstanceOf(UserEmptyException.class)
+        .hasMessageContaining("아이디가 비어있습니다. 아이디는 필수입니다.");
   }
 }
