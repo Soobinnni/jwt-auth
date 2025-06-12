@@ -3,6 +3,7 @@ package com.auth.jwt;
 import com.auth.jwt.user.application.UserCommandService;
 import com.auth.jwt.user.application.dto.command.SignupCommand;
 import com.auth.jwt.user.application.exception.UserAlreadyExistsException;
+import com.auth.jwt.user.domain.entity.Role;
 import com.auth.jwt.user.domain.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,11 @@ public class ApplicationStartupEventListener {
   private void createDefaultUsers() {
     try {
       User adminUser =
-          userCommandService.createAdminUser(1L, new SignupCommand("admin", "admin123", "관리자"));
-      User user = userCommandService.signup(new SignupCommand("user", "user1234", "사용자"));
+          userCommandService.createUser(
+              1L, new SignupCommand("admin", "admin123", "관리자"), Role.ADMIN);
+      User user =
+          userCommandService.createUser(
+              2L, new SignupCommand("user", "user1234", "사용자"), Role.USER);
       log.info("기본 계정이 생성되었습니다.");
       log.info("관리자 정보 : {}", adminUser.toString());
       log.info("일반 사용자 정보 : {}", user.toString());

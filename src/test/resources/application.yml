@@ -1,0 +1,32 @@
+# src/test/resources/application.yml
+spring:
+  application:
+    name: jwt-auth-test
+
+# 테스트용 CORS 설정 (더 관대하게)
+cors:
+  allowed-origins:
+    - "*"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - Authorization
+    - Cache-Control
+    - Content-Type
+  exposed-headers:
+    - Authorization
+    - Content-Disposition
+  allow-credentials: true
+  max-age: 3600
+
+jwt:
+  secretKey: VGVzdFNlY3JldEtleUZvckpXVEF1dGhUZXN0aW5nMTIzNDU2Nzg5MEFCQ0RFRg==
+  accessTokenExpiration: 300000
+  refreshTokenExpiration: 3600000
+  issuer: jwt-auth-test-service
+  audience: jwt-auth-test-client

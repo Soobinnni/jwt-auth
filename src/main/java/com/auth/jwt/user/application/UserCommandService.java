@@ -54,7 +54,7 @@ public class UserCommandService {
     return updatedUser;
   }
 
-  public User createAdminUser(Long id, SignupCommand command) {
+  public User createUser(long id, SignupCommand command, Role role) {
     User user =
         User.create(
             id,
@@ -62,7 +62,7 @@ public class UserCommandService {
             command.password(),
             encryptionProvider,
             command.nickname(),
-            Role.ADMIN);
+            role);
     User savedUser = userRepository.save(user);
     return savedUser;
   }
