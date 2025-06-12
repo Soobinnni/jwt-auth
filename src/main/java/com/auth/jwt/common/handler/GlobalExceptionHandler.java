@@ -1,7 +1,7 @@
 package com.auth.jwt.common.handler;
 
-import com.auth.jwt.common.dto.ErrorResponse;
 import com.auth.jwt.common.exception.*;
+import com.auth.jwt.common.model.ErrorResponse;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -40,11 +41,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseBuilder.build(exception, HttpStatus.CONFLICT);
   }
 
+  @ExceptionHandler(NotFoundException.class)
+  public final ResponseEntity<ErrorResponse> handleNotFoundExceptions(
+      NotFoundException exception, WebRequest request) {
+    logException(exception, request);
+    return ResponseBuilder.build(exception, HttpStatus.NOT_FOUND);
+  }
+
   @ExceptionHandler(BusinessException.class)
   public final ResponseEntity<ErrorResponse> handleBusinessExceptions(
       BusinessException exception, WebRequest request) {
     logException(exception, request);
     return ResponseBuilder.build(exception, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  public final ResponseEntity<Object> handleAuthorizationDeniedException(
+      AuthorizationDeniedException exception, WebRequest request) {
+    log.info(exception.getAuthorizationResult().toString());
+    logException(exception, request);
+    return ResponseBuilder.build(GlobalExceptionDetail.ACCESS_DENIED, HttpStatus.FORBIDDEN);
   }
 
   @Override
@@ -119,6 +135,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   @RequiredArgsConstructor
   enum GlobalExceptionDetail implements ExceptionDetail {
     INTERNAL("내부 오류가 발생하였습니다."),
+    ACCESS_DENIED("접근 권한이 없습니다."),
     INVALID_INPUT("입력하신 데이터에 오류가 있습니다. 요청 내용을 확인하고 다시 시도해 주세요."),
     NOT_READABLE("입력하신 데이터가 잘못된 형식입니다."),
     INVALID_REQUEST("요청하신 값이 올바르지 않습니다. 요청 값을 확인해 주세요."),
