@@ -1,3 +1,23 @@
 spring:
   application:
     name: jwt-auth
+
+cors:
+  allowed-origins:
+    - "*"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - Authorization
+    - Cache-Control
+    - Content-Type
+  exposed-headers:
+    - Authorization
+    - Content-Disposition
+  allow-credentials: true
+  max-age: 3600

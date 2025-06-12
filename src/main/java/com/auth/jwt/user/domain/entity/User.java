@@ -6,7 +6,6 @@ import com.auth.jwt.user.domain.vo.Nickname;
 import com.auth.jwt.user.domain.vo.Password;
 import com.auth.jwt.user.domain.vo.UserId;
 import com.auth.jwt.user.domain.vo.Username;
-import java.util.Set;
 import lombok.Getter;
 
 @Getter
@@ -15,14 +14,14 @@ public class User {
   private final Username username;
   private final Password password;
   private final Nickname nickname;
-  private final Set<Role> roles;
+  private final Role role;
 
-  public User(UserId id, Username username, Password password, Nickname nickname, Set<Role> roles) {
+  public User(UserId id, Username username, Password password, Nickname nickname, Role role) {
     this.id = id;
     this.username = username;
     this.password = password;
     this.nickname = nickname;
-    this.roles = roles;
+    this.role = role;
   }
 
   public static User create(
@@ -37,7 +36,7 @@ public class User {
         Username.of(username),
         Password.of(password, encryptionProvider),
         Nickname.of(nickname),
-        Set.of(Role.getDefault()));
+        Role.getDefault());
   }
 
   @Override

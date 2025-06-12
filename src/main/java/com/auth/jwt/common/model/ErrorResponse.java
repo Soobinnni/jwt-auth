@@ -1,4 +1,4 @@
-package com.auth.jwt.common.dto;
+package com.auth.jwt.common.model;
 
 import com.auth.jwt.common.exception.ExceptionDetail;
 import java.util.Map;

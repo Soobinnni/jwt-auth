@@ -17,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @DisplayName("[UserSignupServiceTest] 회원가입 서비스 테스트")
 class UserSignupServiceTest {
 
-  @Autowired private UserService userService;
+  @Autowired private UserCommandService userCommandService;
 
   @Autowired private UserRepository userRepository;
 
@@ -28,12 +28,12 @@ class UserSignupServiceTest {
     SignupCommand command = new SignupCommand("validuser", "password123", "ValidNick");
 
     // when
-    User result = userService.signup(command);
+    User result = userCommandService.signup(command);
 
     // then
     assertThat(result.getUsername().getValue()).isEqualTo("validuser");
     assertThat(result.getNickname().getValue()).isEqualTo("ValidNick");
-    assertThat(result.getRoles()).containsOnly(Role.USER);
+    assertThat(result.getRole()).isEqualTo(Role.USER);
     assertThat(userRepository.existsByUsername(Username.of("validuser"))).isTrue();
   }
 
@@ -44,10 +44,10 @@ class UserSignupServiceTest {
     SignupCommand firstCommand = new SignupCommand("duplicateuser", "password123", "FirstNick");
     SignupCommand secondCommand = new SignupCommand("duplicateuser", "password456", "SecondNick");
 
-    userService.signup(firstCommand);
+    userCommandService.signup(firstCommand);
 
     // when & then
-    assertThatThrownBy(() -> userService.signup(secondCommand))
+    assertThatThrownBy(() -> userCommandService.signup(secondCommand))
         .isInstanceOf(UserAlreadyExistsException.class);
   }
 }

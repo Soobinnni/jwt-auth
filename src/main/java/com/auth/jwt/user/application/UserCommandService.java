@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 @UserExceptionHandler
 @RequiredArgsConstructor
-public class UserService {
+public class UserCommandService {
   private final UserRepository userRepository;
   private final IdGenerator idGenerator;
   private final PasswordEncryptionProvider encryptionProvider;
