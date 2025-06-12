@@ -182,8 +182,7 @@ class TokenRefreshApiIntegrationTest {
   void should_ReturnUnauthorized_When_RefreshTokenIsNull() throws Exception {
     // given
     TokenReissueRequest request = new TokenReissueRequest(VALID_ACCESS_TOKEN, null);
-    // RefreshTokenFilter에서 JSON 파싱 후 처리되므로 실제로는 AuthenticationService까지 전달됨
-    mockFailedTokenRefresh("INVALID_REFRESH_TOKEN", "유효하지 않은 리프레시 토큰입니다.");
+    mockFailedTokenRefresh("TOKEN_REISSUE_FAILED", "리프레시 토큰은 필수입니다.");
 
     // when & then
     mockMvc
@@ -193,7 +192,7 @@ class TokenRefreshApiIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error.code").value("INVALID_REFRESH_TOKEN"));
+        .andExpect(jsonPath("$.error.code").value("TOKEN_REISSUE_FAILED"));
   }
 
   @Test
@@ -201,7 +200,7 @@ class TokenRefreshApiIntegrationTest {
   void should_ReturnUnauthorized_When_AccessTokenIsNull() throws Exception {
     // given
     TokenReissueRequest request = new TokenReissueRequest(null, VALID_REFRESH_TOKEN);
-    mockFailedTokenRefresh("INVALID_REFRESH_TOKEN", "유효하지 않은 리프레시 토큰입니다.");
+    mockFailedTokenRefresh("TOKEN_REISSUE_FAILED", "액세스 토큰은 필수입니다.");
 
     // when & then
     mockMvc
@@ -211,7 +210,7 @@ class TokenRefreshApiIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error.code").value("INVALID_REFRESH_TOKEN"));
+        .andExpect(jsonPath("$.error.code").value("TOKEN_REISSUE_FAILED"));
   }
 
   @Test

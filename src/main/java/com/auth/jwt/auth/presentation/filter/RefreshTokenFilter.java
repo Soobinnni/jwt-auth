@@ -6,14 +6,17 @@ import com.auth.jwt.auth.presentation.dto.request.TokenReissueRequest;
 import com.auth.jwt.auth.presentation.dto.response.RefreshTokenResponse;
 import com.auth.jwt.auth.presentation.utils.AuthResponseSender;
 import com.auth.jwt.common.utils.LoggingUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
@@ -40,8 +43,8 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
 
     try {
-      TokenReissueRequest refreshRequest =
-          objectMapper.readValue(httpRequest.getInputStream(), TokenReissueRequest.class);
+      String requestBody = getRequestBody(httpRequest);
+      TokenReissueRequest refreshRequest = parseTokenReissueRequest(requestBody);
 
       if (log.isDebugEnabled()) {
         log.debug("토큰 갱신 요청 - IP: {}", LoggingUtil.getClientIp(httpRequest));
@@ -62,6 +65,14 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
       }
 
       successfulAuthentication(httpRequest, httpResponse, result);
+
+    } catch (IllegalArgumentException e) {
+      log.error("토큰 갱신 요청 유효성 검증 오류: {}", e.getMessage());
+      unsuccessfulAuthentication(httpRequest, httpResponse, e, null);
+    } catch (IOException e) {
+      log.error("토큰 갱신 요청 처리 중 IO 오류: {}", e.getMessage());
+      unsuccessfulAuthentication(
+          httpRequest, httpResponse, new Exception("토큰 갱신 요청을 처리할 수 없습니다."), null);
     } catch (Exception e) {
       log.warn(
           "토큰 갱신 요청 처리 중 오류: {}, IP: {}", e.getMessage(), LoggingUtil.getClientIp(httpRequest));
@@ -69,10 +80,29 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
     }
   }
 
+  private String getRequestBody(HttpServletRequest request) throws IOException {
+    try (BufferedReader reader = request.getReader()) {
+      return reader.lines().collect(Collectors.joining("\n"));
+    }
+  }
+
+  private TokenReissueRequest parseTokenReissueRequest(String requestBody) throws IOException {
+    if (requestBody == null || requestBody.trim().isEmpty()) {
+      log.warn("토큰 갱신 - 빈 요청 본문 수신");
+      return TokenReissueRequest.empty();
+    }
+
+    try {
+      return objectMapper.readValue(requestBody, TokenReissueRequest.class);
+    } catch (JsonProcessingException e) {
+      log.error("토큰 갱신 - JSON 파싱 오류: {}", e.getMessage());
+      throw new IOException("잘못된 JSON 형식입니다.", e);
+    }
+  }
+
   protected void successfulAuthentication(
       HttpServletRequest httpRequest, HttpServletResponse httpResponse, TokenReissueResult result) {
     try {
-
       RefreshTokenResponse response =
           new RefreshTokenResponse(
               result.tokenPair().accessToken(), result.tokenPair().refreshToken());

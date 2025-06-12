@@ -9,12 +9,15 @@ import com.auth.jwt.auth.presentation.dto.response.LoginResponse;
 import com.auth.jwt.auth.presentation.utils.AuthResponseSender;
 import com.auth.jwt.common.model.CustomPrincipal;
 import com.auth.jwt.common.utils.LoggingUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,10 +36,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
   @Override
   public Authentication attemptAuthentication(
-      HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+      HttpServletRequest request, HttpServletResponse response) {
     try {
-      LoginRequest loginRequest =
-          objectMapper.readValue(request.getInputStream(), LoginRequest.class);
+      String requestBody = getRequestBody(request);
+
+      LoginRequest loginRequest = parseLoginRequest(requestBody);
 
       if (log.isDebugEnabled()) {
         log.debug(
@@ -55,6 +59,29 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     } catch (IOException e) {
       log.error("로그인 요청 처리 중 IO 오류: {}", e.getMessage());
       throw new AuthenticationException("로그인 요청을 처리할 수 없습니다.") {};
+    } catch (IllegalArgumentException e) {
+      log.error("유효성 검증 오류: {}", e.getMessage());
+      throw new AuthenticationException(e.getMessage()) {};
+    }
+  }
+
+  private String getRequestBody(HttpServletRequest request) throws IOException {
+    try (BufferedReader reader = request.getReader()) {
+      return reader.lines().collect(Collectors.joining("\n"));
+    }
+  }
+
+  private LoginRequest parseLoginRequest(String requestBody) throws IOException {
+    if (requestBody == null || requestBody.trim().isEmpty()) {
+      log.warn("빈 요청 본문 수신");
+      return LoginRequest.empty();
+    }
+
+    try {
+      return objectMapper.readValue(requestBody, LoginRequest.class);
+    } catch (JsonProcessingException e) {
+      log.error("JSON 파싱 오류: {}", e.getMessage());
+      throw new IOException("잘못된 JSON 형식입니다.", e);
     }
   }
 
