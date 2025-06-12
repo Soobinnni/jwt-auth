@@ -4,6 +4,7 @@ import com.auth.jwt.auth.application.AuthenticationService;
 import com.auth.jwt.auth.presentation.filter.AuthenticationFilter;
 import com.auth.jwt.auth.presentation.filter.AuthorizationFilter;
 import com.auth.jwt.auth.presentation.filter.RefreshTokenFilter;
+import com.auth.jwt.auth.presentation.handler.CustomAccessDeniedHandler;
 import com.auth.jwt.auth.presentation.utils.AuthResponseSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class SecurityConfig {
   private final CorsProperties corsProperties;
   private final AuthorizationFilter authorizationFilter;
   private final RefreshTokenFilter refreshTokenFilter;
+  private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
   private final AuthenticationService authenticationService;
   private final AuthResponseSender authResponseSender;
@@ -47,7 +49,8 @@ public class SecurityConfig {
         .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(exceptions -> exceptions.accessDeniedHandler(customAccessDeniedHandler));
 
     http.authorizeHttpRequests(
         requests ->

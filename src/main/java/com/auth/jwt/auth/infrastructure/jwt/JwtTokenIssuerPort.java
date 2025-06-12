@@ -1,13 +1,10 @@
 package com.auth.jwt.auth.infrastructure.jwt;
 
+import com.auth.jwt.auth.application.exception.TokenExpiredException;
 import com.auth.jwt.auth.application.port.TokenIssuerPort;
 import com.auth.jwt.auth.application.port.TokenValidationPort;
-import com.auth.jwt.infrastructure.config.JwtProperties;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import com.auth.jwt.auth.infrastructure.config.JwtProperties;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -70,12 +67,14 @@ public class JwtTokenIssuerPort implements TokenIssuerPort, TokenValidationPort 
 
       Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
       return true;
+    } catch (ExpiredJwtException expiredException) {
+      log.warn("만료된 토큰입니다: {}", expiredException.getMessage());
+      throw new TokenExpiredException();
     } catch (MalformedJwtException
         | SignatureException
-        | ExpiredJwtException
         | UnsupportedJwtException
         | IllegalArgumentException ex) {
-      log.error("JWT token validation failed: {}", ex.getMessage());
+      log.error("JWT token 유효성 검증 실패: {}", ex.getMessage());
       return false;
     }
   }

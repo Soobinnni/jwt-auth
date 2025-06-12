@@ -21,3 +21,11 @@ cors:
     - Content-Disposition
   allow-credentials: true
   max-age: 3600
+
+
+jwt:
+  secretKey: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  accessTokenExpiration: 300000
+  refreshTokenExpiration: 2592000000
+  issuer: jwt-auth-service
+  audience: jwt-auth-client

@@ -1,6 +1,7 @@
 package com.auth.jwt.common.model;
 
 import com.auth.jwt.common.exception.ExceptionDetail;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Map;
 
 public record ErrorResponse(Error error) {
@@ -12,5 +13,6 @@ public record ErrorResponse(Error error) {
     return new ErrorResponse(new Error(detail.getCode(), detail.getMessage(), details));
   }
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record Error(String code, String message, Map<String, String> details) {}
 }

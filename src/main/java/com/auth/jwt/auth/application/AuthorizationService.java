@@ -1,6 +1,7 @@
 package com.auth.jwt.auth.application;
 
 import com.auth.jwt.auth.application.dto.result.TokenValidationResult;
+import com.auth.jwt.auth.application.exception.TokenExpiredException;
 import com.auth.jwt.auth.application.port.TokenValidationPort;
 import com.auth.jwt.common.model.CustomPrincipal;
 import com.auth.jwt.common.percade.UserQueryFacade;
@@ -17,9 +18,15 @@ public class AuthorizationService {
   private final TokenValidationPort tokenValidationPort;
 
   public TokenValidationResult validateAccessToken(String token) {
-    if (!tokenValidationPort.validateToken(token)) {
-      log.info("유효하지 않은 토큰임");
-      return TokenValidationResult.fail("INVALID_TOKEN", "유효하지 않은 토큰입니다.");
+    try {
+      if (!tokenValidationPort.validateToken(token)) {
+        log.info("유효하지 않은 토큰임");
+        return TokenValidationResult.fail("INVALID_TOKEN", "유효하지 않은 토큰입니다.");
+      }
+    } catch (TokenExpiredException e) {
+      log.info("만료된 토큰임");
+      return TokenValidationResult.fail(
+          e.getExceptionDetail().getCode(), e.getExceptionDetail().getMessage());
     }
 
     Long userId = extractUserId(token);

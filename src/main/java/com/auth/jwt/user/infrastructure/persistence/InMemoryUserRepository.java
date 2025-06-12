@@ -40,4 +40,17 @@ public class InMemoryUserRepository implements UserRepository {
   public Optional<User> findByUsername(Username username) {
     return Optional.ofNullable(usernameIndex.get(username));
   }
+
+  @Override
+  public User update(User updatedUser) {
+    deleteById(updatedUser.getId());
+    return save(updatedUser);
+  }
+
+  private void deleteById(UserId userId) {
+    User user = userStore.remove(userId);
+    if (user != null) {
+      usernameIndex.remove(user.getUsername());
+    }
+  }
 }
