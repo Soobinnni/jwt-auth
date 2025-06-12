@@ -1,15 +1,10 @@
 name: CI/CD Pipeline for JWT Auth
 
-#on:
-#  push:
-#    branches: [ "main", "develop" ]
-#  pull_request:
-#    branches: [ "main", "develop" ]
 on:
   push:
-    branches: [ "test/deploy" ]
+    branches: [ "develop", "main" ]
   pull_request:
-    branches: [ "test/deploy" ]
+    branches: [ "develop", "main" ]
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
@@ -50,7 +45,7 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
-    #    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,7 +76,7 @@ jobs:
   deploy:
     needs: [ test, build ]
     runs-on: ubuntu-latest
-    #    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

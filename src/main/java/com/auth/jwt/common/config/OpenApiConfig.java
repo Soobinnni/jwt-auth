@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -52,6 +53,7 @@ import org.springframework.context.annotation.Configuration;
             - **관리자**: username=`admin`, password=`admin123`
             - **일반 사용자**: username=`user`, password=`user1234`
             """),
+    servers = {@Server(url = "http://52.207.211.95:8080")},
     security = @SecurityRequirement(name = "bearerAuth"))
 @SecurityScheme(
     name = "bearerAuth",
@@ -69,10 +71,9 @@ import org.springframework.context.annotation.Configuration;
 
         **토큰 획득 방법**:
         1. `/login` API로 로그인하여 토큰을 발급받습니다.
-        2. 응답으로 받은 `accessToken` 값 앞에 'Bearer '를 붙여서 입력합니다.
+        2. 응답으로 받은 `accessToken`를 붙여서 입력합니다.
 
         **주의사항**:
-        - 토큰 앞에 반드시 'Bearer ' (공백 포함)를 붙여야 합니다.
         - 토큰이 만료되면 `/refresh-token` API로 갱신하세요.
         """)
 public class OpenApiConfig {
