@@ -7,18 +7,17 @@ import com.auth.jwt.auth.application.dto.result.AuthenticationResult;
 import com.auth.jwt.auth.application.dto.result.CreateTokenPairResult;
 import com.auth.jwt.auth.application.dto.result.TokenReissueResult;
 import com.auth.jwt.auth.application.exception.AuthenticationException;
+import com.auth.jwt.auth.application.model.RefreshToken;
 import com.auth.jwt.auth.application.port.DateTimePort;
+import com.auth.jwt.auth.application.port.RefreshTokenStoragePort;
 import com.auth.jwt.auth.application.port.TokenIssuerPort;
 import com.auth.jwt.auth.application.port.TokenValidationPort;
-import com.auth.jwt.auth.domain.entity.RefreshToken;
-import com.auth.jwt.auth.domain.repository.RefreshTokenRepository;
-import com.auth.jwt.auth.domain.vo.TokenExpiry;
-import com.auth.jwt.auth.domain.vo.TokenValue;
 import com.auth.jwt.common.exception.BusinessException;
 import com.auth.jwt.common.exception.ExceptionDetail;
 import com.auth.jwt.common.exception.NotFoundException;
 import com.auth.jwt.common.percade.UserQueryFacade;
 import com.auth.jwt.user.domain.entity.User;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
   private final UserQueryFacade userQueryFacade;
   private final DateTimePort dateTimePort;
-  private final RefreshTokenRepository refreshTokenRepository;
+  private final RefreshTokenStoragePort refreshTokenRepository;
   private final TokenIssuerPort tokenIssuerPort;
   private final TokenValidationPort tokenValidationPort;
 
@@ -75,9 +74,9 @@ public class AuthenticationService {
   public void saveRefreshToken(SaveRefreshCommand command) {
     refreshTokenRepository.deleteByUserId(command.userId());
 
-    TokenExpiry expiry = TokenExpiry.of(dateTimePort.getCurrentDateTime().plusDays(30));
+    LocalDateTime expiry = dateTimePort.getCurrentDateTime().plusDays(30);
     RefreshToken refreshToken =
-        RefreshToken.create(TokenValue.of(command.refreshToken()), command.userId(), expiry);
+        RefreshToken.create(command.refreshToken(), command.userId(), expiry);
 
     refreshTokenRepository.save(refreshToken);
   }
@@ -118,15 +117,15 @@ public class AuthenticationService {
   }
 
   private boolean isStoredTokenValid(String refreshToken) {
-    TokenValue tokenValue = TokenValue.of(refreshToken);
-    Optional<RefreshToken> storedToken = refreshTokenRepository.findByTokenValue(tokenValue);
+    Optional<RefreshToken> storedToken = refreshTokenRepository.findByTokenValue(refreshToken);
 
     if (storedToken.isEmpty()) {
       return false;
     }
 
-    if (storedToken.get().getExpiry().isExpired()) {
-      refreshTokenRepository.deleteByTokenValue(tokenValue);
+    LocalDateTime currentTime = dateTimePort.getCurrentDateTime();
+    if (storedToken.get().isExpired(currentTime)) {
+      refreshTokenRepository.deleteByTokenValue(refreshToken);
       return false;
     }
 
