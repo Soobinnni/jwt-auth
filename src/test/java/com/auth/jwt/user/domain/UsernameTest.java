@@ -12,20 +12,20 @@ import org.junit.jupiter.api.Test;
 class UsernameTest {
 
   @Test
-  @DisplayName("Username 생성 성공 - 유효한 길이")
-  void createUsernameSuccess() {
+  @DisplayName("사용자명 생성 성공 - 유효한 길이 범위")
+  void should_CreateUsername_When_ValidLengthProvided() {
     // given
-    String validUsername = "ab"; // 최소 길이 2
-    String validLongUsername = "a".repeat(50); // 최대 길이 50
+    String minLengthUsername = "ab"; // 최소 길이 2
+    String maxLengthUsername = "a".repeat(50); // 최대 길이 50
 
     // when & then
-    assertThatCode(() -> Username.of(validUsername)).doesNotThrowAnyException();
-    assertThatCode(() -> Username.of(validLongUsername)).doesNotThrowAnyException();
+    assertThatCode(() -> Username.of(minLengthUsername)).doesNotThrowAnyException();
+    assertThatCode(() -> Username.of(maxLengthUsername)).doesNotThrowAnyException();
   }
 
   @Test
-  @DisplayName("Username 생성 실패 - 길이 부족")
-  void createUsernameFailTooShort() {
+  @DisplayName("사용자명 생성 실패 - 최소 길이 미달")
+  void should_ThrowException_When_UsernameTooShort() {
     // given
     String shortUsername = "a"; // 1글자
 
@@ -36,8 +36,8 @@ class UsernameTest {
   }
 
   @Test
-  @DisplayName("Username 생성 실패 - 길이 초과")
-  void createUsernameFailTooLong() {
+  @DisplayName("사용자명 생성 실패 - 최대 길이 초과")
+  void should_ThrowException_When_UsernameTooLong() {
     // given
     String longUsername = "a".repeat(51); // 51글자
 
@@ -48,8 +48,8 @@ class UsernameTest {
   }
 
   @Test
-  @DisplayName("Username 생성 실패 - null 입력")
-  void createUsernameFailNull() {
+  @DisplayName("사용자명 생성 실패 - null 값 입력")
+  void should_ThrowException_When_UsernameIsNull() {
     // when & then
     assertThatThrownBy(() -> Username.of(null))
         .isInstanceOf(UserEmptyException.class)
@@ -57,8 +57,8 @@ class UsernameTest {
   }
 
   @Test
-  @DisplayName("Username 생성 실패 - 빈 문자열")
-  void createUsernameFailBlank() {
+  @DisplayName("사용자명 생성 실패 - 빈 문자열 또는 공백")
+  void should_ThrowException_When_UsernameIsBlankOrWhitespace() {
     // when & then
     assertThatThrownBy(() -> Username.of(""))
         .isInstanceOf(UserEmptyException.class)

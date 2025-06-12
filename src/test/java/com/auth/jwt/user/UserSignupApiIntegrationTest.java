@@ -1,16 +1,12 @@
-package com.auth.jwt.user.presentation;
+package com.auth.jwt.user;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.auth.jwt.auth.presentation.filter.AuthenticationFilter;
-import com.auth.jwt.auth.presentation.filter.AuthorizationFilter;
-import com.auth.jwt.auth.presentation.filter.RefreshTokenFilter;
 import com.auth.jwt.user.application.UserCommandService;
 import com.auth.jwt.user.application.dto.command.SignupCommand;
 import com.auth.jwt.user.application.exception.UserAlreadyExistsException;
@@ -21,52 +17,36 @@ import com.auth.jwt.user.domain.vo.UserId;
 import com.auth.jwt.user.domain.vo.Username;
 import com.auth.jwt.user.presentation.dto.request.SignupRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(
-    controllers = UserController.class,
-    excludeAutoConfiguration = {SecurityAutoConfiguration.class},
-    excludeFilters =
-        @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE,
-            classes = {
-              AuthorizationFilter.class,
-              AuthenticationFilter.class,
-              RefreshTokenFilter.class
-            }))
-@Import(UserSignupControllerTest.TestConfig.class)
-@DisplayName("[UserSignupControllerTest] 회원가입 테스트")
-class UserSignupControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("[UserSignupApiIntegrationTest] 회원가입 API 통합 테스트")
+class UserSignupApiIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
-  @Autowired private UserCommandService userCommandService;
+  @MockitoBean private UserCommandService userCommandService;
 
-  @BeforeEach
-  void setUp() {
-    Mockito.reset(userCommandService);
+  private User createMockUser(Long id, String username, String nickname) {
+    return new User(UserId.of(id), Username.of(username), null, Nickname.of(nickname), Role.USER);
   }
 
   @Test
-  @DisplayName("회원가입 성공 - 올바른 입력")
-  void signupSuccess() throws Exception {
+  @DisplayName("회원가입 성공 - 유효한 입력 데이터")
+  void should_CreateUser_When_ValidInputProvided() throws Exception {
     // given
-    User mockUser =
-        new User(UserId.of(1L), Username.of("testuser"), null, Nickname.of("TestNick"), Role.USER);
+    User mockUser = createMockUser(1L, "testuser", "TestNick");
     SignupRequest request = new SignupRequest("testuser", "password123", "TestNick");
     given(userCommandService.signup(ArgumentMatchers.any(SignupCommand.class)))
         .willReturn(mockUser);
@@ -75,7 +55,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -89,8 +68,27 @@ class UserSignupControllerTest {
   }
 
   @Test
+  @DisplayName("회원가입 실패 - 이미 존재하는 사용자명")
+  void should_RejectSignup_When_UsernameAlreadyExists() throws Exception {
+    // given
+    SignupRequest request = new SignupRequest("duplicateuser", "password123", "TestNick");
+    willThrow(new UserAlreadyExistsException()).given(userCommandService).signup(any());
+
+    // when & then
+    mockMvc
+        .perform(
+            post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andDo(print())
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("USER_ALREADY_EXISTS"))
+        .andExpect(jsonPath("$.error.message").value("이미 가입된 사용자입니다."));
+  }
+
+  @Test
   @DisplayName("회원가입 실패 - 사용자명이 null")
-  void signupFailUsernameNull() throws Exception {
+  void should_RejectSignup_When_UsernameIsNull() throws Exception {
     // given
     SignupRequest request = new SignupRequest(null, "password123", "TestNick");
 
@@ -98,7 +96,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -109,7 +106,7 @@ class UserSignupControllerTest {
 
   @Test
   @DisplayName("회원가입 실패 - 사용자명이 빈 문자열")
-  void signupFailUsernameBlank() throws Exception {
+  void should_RejectSignup_When_UsernameIsBlank() throws Exception {
     // given
     SignupRequest request = new SignupRequest("", "password123", "TestNick");
 
@@ -117,7 +114,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -128,7 +124,7 @@ class UserSignupControllerTest {
 
   @Test
   @DisplayName("회원가입 실패 - 비밀번호가 null")
-  void signupFailPasswordNull() throws Exception {
+  void should_RejectSignup_When_PasswordIsNull() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", null, "TestNick");
 
@@ -136,7 +132,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -147,7 +142,7 @@ class UserSignupControllerTest {
 
   @Test
   @DisplayName("회원가입 실패 - 비밀번호가 빈 문자열")
-  void signupFailPasswordBlank() throws Exception {
+  void should_RejectSignup_When_PasswordIsBlank() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "", "TestNick");
 
@@ -155,7 +150,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -166,7 +160,7 @@ class UserSignupControllerTest {
 
   @Test
   @DisplayName("회원가입 실패 - 닉네임이 null")
-  void signupFailNicknameNull() throws Exception {
+  void should_RejectSignup_When_NicknameIsNull() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "password123", null);
 
@@ -174,7 +168,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -185,7 +178,7 @@ class UserSignupControllerTest {
 
   @Test
   @DisplayName("회원가입 실패 - 닉네임이 빈 문자열")
-  void signupFailNicknameBlank() throws Exception {
+  void should_RejectSignup_When_NicknameIsBlank() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "password123", "");
 
@@ -193,7 +186,6 @@ class UserSignupControllerTest {
     mockMvc
         .perform(
             post("/users")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andDo(print())
@@ -203,60 +195,28 @@ class UserSignupControllerTest {
   }
 
   @Test
-  @DisplayName("회원가입 실패 - 이미 존재하는 사용자")
-  void signupFailUserAlreadyExists() throws Exception {
-    // given
-    SignupRequest request = new SignupRequest("existinguser", "password123", "TestNick");
-    willThrow(new UserAlreadyExistsException()).given(userCommandService).signup(any());
-
-    // when & then
-    mockMvc
-        .perform(
-            post("/users")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andDo(print())
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.error.code").value("USER_ALREADY_EXISTS"))
-        .andExpect(jsonPath("$.error.message").value("이미 가입된 사용자입니다."));
-  }
-
-  @Test
   @DisplayName("회원가입 실패 - 잘못된 JSON 형식")
-  void signupFailInvalidJson() throws Exception {
+  void should_RejectSignup_When_JsonFormatIsInvalid() throws Exception {
     // given
     String invalidJson = "{ invalid json }";
 
     // when & then
     mockMvc
-        .perform(
-            post("/users")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidJson))
+        .perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(invalidJson))
         .andDo(print())
         .andExpect(status().isBadRequest());
   }
 
   @Test
-  @DisplayName("회원가입 실패 - Content-Type이 없는 경우")
-  void signupFailNoContentType() throws Exception {
+  @DisplayName("회원가입 실패 - Content-Type 헤더 누락")
+  void should_RejectSignup_When_ContentTypeHeaderMissing() throws Exception {
     // given
     SignupRequest request = new SignupRequest("testuser", "password123", "TestNick");
 
     // when & then
     mockMvc
-        .perform(post("/users").with(csrf()).content(objectMapper.writeValueAsString(request)))
+        .perform(post("/users").content(objectMapper.writeValueAsString(request)))
         .andDo(print())
         .andExpect(status().isUnsupportedMediaType());
-  }
-
-  @TestConfiguration
-  static class TestConfig {
-    @Bean
-    public UserCommandService userService() {
-      return Mockito.mock(UserCommandService.class);
-    }
   }
 }

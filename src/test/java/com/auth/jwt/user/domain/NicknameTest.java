@@ -12,32 +12,32 @@ import org.junit.jupiter.api.Test;
 class NicknameTest {
 
   @Test
-  @DisplayName("Nickname 생성 성공 - 유효한 길이")
-  void createNicknameSuccess() {
+  @DisplayName("닉네임 생성 성공 - 유효한 길이 범위")
+  void should_CreateNickname_When_ValidLengthProvided() {
     // given
-    String validNickname = "N"; // 최소 길이 1
-    String validLongNickname = "a".repeat(30); // 최대 길이 30
+    String minLengthNickname = "N"; // 최소 길이 1
+    String maxLengthNickname = "a".repeat(30); // 최대 길이 30
 
     // when & then
-    assertThatCode(() -> Nickname.of(validNickname)).doesNotThrowAnyException();
-    assertThatCode(() -> Nickname.of(validLongNickname)).doesNotThrowAnyException();
+    assertThatCode(() -> Nickname.of(minLengthNickname)).doesNotThrowAnyException();
+    assertThatCode(() -> Nickname.of(maxLengthNickname)).doesNotThrowAnyException();
   }
 
   @Test
-  @DisplayName("Nickname 생성 실패 - 길이 초과")
-  void createNicknameFailTooLong() {
+  @DisplayName("닉네임 생성 실패 - 최대 길이 초과")
+  void should_ThrowException_When_NicknameExceedsMaxLength() {
     // given
-    String longNickname = "a".repeat(31); // 31글자
+    String tooLongNickname = "a".repeat(31); // 31글자
 
     // when & then
-    assertThatThrownBy(() -> Nickname.of(longNickname))
+    assertThatThrownBy(() -> Nickname.of(tooLongNickname))
         .isInstanceOf(UserInvalidLengthException.class)
         .hasMessageContaining("최소 1 길이와, 최대 30 길이여야 합니다");
   }
 
   @Test
-  @DisplayName("Nickname 생성 실패 - null 입력")
-  void createNicknameFailNull() {
+  @DisplayName("닉네임 생성 실패 - null 값 입력")
+  void should_ThrowException_When_NicknameIsNull() {
     // when & then
     assertThatThrownBy(() -> Nickname.of(null))
         .isInstanceOf(UserEmptyException.class)
@@ -45,8 +45,8 @@ class NicknameTest {
   }
 
   @Test
-  @DisplayName("Nickname 생성 실패 - 빈 문자열")
-  void createNicknameFailBlank() {
+  @DisplayName("닉네임 생성 실패 - 빈 문자열 입력")
+  void should_ThrowException_When_NicknameIsBlank() {
     // when & then
     assertThatThrownBy(() -> Nickname.of(""))
         .isInstanceOf(UserEmptyException.class)

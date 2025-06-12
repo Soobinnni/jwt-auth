@@ -12,18 +12,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("[UserSignupServiceTest] 회원가입 서비스 테스트")
 class UserSignupServiceTest {
 
   @Autowired private UserCommandService userCommandService;
-
   @Autowired private UserRepository userRepository;
 
   @Test
-  @DisplayName("회원가입 성공 - 정상적인 사용자 정보")
-  void signupSuccess() {
+  @DisplayName("회원가입 성공 - 유효한 사용자 정보")
+  void should_CreateUser_When_ValidUserInfoProvided() {
     // given
     SignupCommand command = new SignupCommand("validuser", "password123", "ValidNick");
 
@@ -38,8 +39,8 @@ class UserSignupServiceTest {
   }
 
   @Test
-  @DisplayName("회원가입 실패 - 이미 존재하는 사용자명")
-  void signupFailDuplicateUsername() {
+  @DisplayName("회원가입 실패 - 중복된 사용자명")
+  void should_ThrowException_When_UsernameAlreadyExists() {
     // given
     SignupCommand firstCommand = new SignupCommand("duplicateuser", "password123", "FirstNick");
     SignupCommand secondCommand = new SignupCommand("duplicateuser", "password456", "SecondNick");
